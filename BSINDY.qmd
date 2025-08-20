@@ -1,0 +1,51 @@
+---
+title: "Rapid Bayesian identification of sparse nonlinear dynamics from scarce and noisy data"
+subtitle: NUMBAT Reading Group
+bibliography: refs.bib
+---
+
+## Summary
+
+- SINDy is a method used to estimate dynamic models from data
+- This paper presents a Bayesian reformulation of the method
+- The Bayesian method is more robust against noise
+- There are still heathens that use MatLab
+
+## Background
+
+Dynamic Models
+
+These are an "old-world" model popular in applied mathematics. They aim to "explain" underlying mechanisms.
+
+Typical presentation:
+$$
+\frac{d}{dt} x(t) = f(t, x(t); \Theta)
+$$
+
+. . . 
+
+Can also be viewed as a nonlinear form of time-series regression:
+
+$$
+x(t + \Delta t) = x(t) + \Delta t \, f(t, x(t); \Theta)
+$$
+
+## Background
+
+Usually, we like to specify the form of $f$, since we have some belief of how the system we are studying behaves.
+
+This area of study instead focuses on the case where we want to "discover" underlying mechanisms from observations. 
+
+## SINDy
+
+@brunton_discovering_2016 introduces a method for estimating this under a non-Bayesian framework.
+
+The idea is that the mechanisms in $f$ can be represented as a linear combination of functions from a pre-specified library.
+
+
+
+
+## References
+
+::: {#refs}
+:::
