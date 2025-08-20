@@ -1,6 +1,7 @@
 ---
 title: "Rapid Bayesian identification of sparse nonlinear dynamics from scarce and noisy data"
 subtitle: NUMBAT Reading Group
+date: 11 September 2025
 bibliography: refs.bib
 ---
 
@@ -9,7 +10,7 @@ bibliography: refs.bib
 - SINDy is a method used to estimate dynamic models from data
 - This paper presents a Bayesian reformulation of the method
 - The Bayesian method is more robust against noise
-- There are still heathens that use MatLab
+- There are sickos out there that still use MatLab
 
 ## Background
 
