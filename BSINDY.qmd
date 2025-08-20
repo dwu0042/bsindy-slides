@@ -3,6 +3,8 @@ title: "Rapid Bayesian identification of sparse nonlinear dynamics from scarce a
 subtitle: NUMBAT Reading Group
 date: 11 September 2025
 bibliography: refs.bib
+filter:
+    - pyodide
 ---
 
 ## Summary
@@ -28,7 +30,7 @@ $$
 Can also be viewed as a nonlinear form of time-series regression:
 
 $$
-x(t + \Delta t) = x(t) + \Delta t \, f(t, x(t); \Theta)
+x_{t + \Delta t} = x_t + \Delta t \, f(t, x_t; \Theta)
 $$
 
 ## Background
@@ -39,12 +41,86 @@ This area of study instead focuses on the case where we want to "discover" under
 
 ## SINDy
 
-@brunton_discovering_2016 introduces a method for estimating this under a non-Bayesian framework.
+@brunton_discovering_2016 introduces a method for estimating a model $f$ from data $y$ under a non-Bayesian framework.
 
 The idea is that the mechanisms in $f$ can be represented as a linear combination of functions from a pre-specified library.
+Then, a sparsity penalty can be applied to shrink nuisance components of the library to zero.
 
+## SINDy: Example
 
+The Van der Pol Oscillator
 
+$$\begin{aligned}
+\dot{x}_1 &= x_2\\
+\dot{x}_2 &= -x_1 + 4x_2 + 4x_1^2x_2
+\end{aligned}
+$$
+
+```{python}
+import numpy as np
+from numpy import typing as npt
+from scipy import integrate
+from matplotlib import pyplot as plt
+
+def van_der_pol_oscillator_1144(t: npt.DTypeLike, x: npt.ArrayLike) -> npt.ArrayLike:
+    return np.array([
+        x[1],
+        -x[0] + 4*x[1] - 4*x[0]**2*x[1],
+    ])
+
+integration_limits = [0, 12]
+initial_state = [2, 0]
+state_space_solution = integrate.solve_ivp(
+    van_der_pol_oscillator_1144, 
+    t_span=integration_limits,
+    y0=initial_state,
+    dense_output=True
+)
+
+plotting_time_span = np.linspace(0, 12, 1001)
+plotting_solution = state_space_solution.sol(plotting_time_span)
+
+fig, axs = plt.subplots(ncols=2, constrained_layout=True)
+axz = axs.flatten()
+axz[0].plot(plotting_time_span, plotting_solution.T)
+axz[0].set_xlabel('t')
+axz[0].legend(['$x_1$', '$x_2$'])
+axz[1].plot(*plotting_solution)
+axz[1].set_xlabel('$x_1$')
+axz[1].set_ylabel('$x_2$')
+_ = None
+```
+
+## SINDy: Example
+
+The Van der Pol Oscillator (noisy observations)
+
+$$
+y = x + \mathcal{N}(0, 0.1^2)
+$$
+
+```{python}
+rng = np.random.default_rng(20250911)
+observation_times = np.linspace(0, 12, 49)
+pure_observations = state_space_solution.sol(observation_times)
+noisy_observations = (
+    pure_observations
+    + rng.normal(loc=0, scale=0.1, size=pure_observations.shape)
+)
+
+fig, axs = plt.subplots(ncols=2, constrained_layout=True)
+axz = axs.flatten()
+axz[0].plot(plotting_time_span, plotting_solution.T)
+axz[0].set_prop_cycle(None)
+axz[0].plot(observation_times, noisy_observations.T, marker='+', linestyle='none')
+axz[0].set_xlabel('t')
+axz[0].legend(['$x_1$', '$x_2$'])
+axz[1].plot(*plotting_solution)
+axz[1].plot(*noisy_observations, color='k', marker='+', linestyle='none')
+axz[1].set_xlabel('$x_1$')
+axz[1].set_ylabel('$x_2$')
+_ = None
+```
 
 ## References
 
