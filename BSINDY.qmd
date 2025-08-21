@@ -5,6 +5,21 @@ date: 11 September 2025
 bibliography: refs.bib
 filter:
     - pyodide
+
+format: 
+    revealjs:
+        html-math-method:
+            method: mathjax
+            url: https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js
+        include-in-header:
+            - text: |
+                <script>
+                window.MathJax = {
+                    loader: {load: ['[tex]/physics']},
+                    tex: {packages: {'[+]': ['physics']}}
+                };
+                </script>
+
 ---
 
 ## Summary
@@ -21,9 +36,8 @@ Dynamic Models
 These are an "old-world" model popular in applied mathematics. They aim to "explain" underlying mechanisms.
 
 Typical presentation:
-$$
-\frac{d}{dt} x(t) = f(t, x(t); \Theta)
-$$
+
+$$\frac{d}{dt} x(t) = f(t, x(t); \Theta)$$
 
 . . . 
 
@@ -46,81 +60,120 @@ This area of study instead focuses on the case where we want to "discover" under
 The idea is that the mechanisms in $f$ can be represented as a linear combination of functions from a pre-specified library.
 Then, a sparsity penalty can be applied to shrink nuisance components of the library to zero.
 
-## SINDy: Example
+## Vanilla SINDy: Example
 
 The Van der Pol Oscillator
 
 $$\begin{aligned}
 \dot{x}_1 &= x_2\\
-\dot{x}_2 &= -x_1 + 4x_2 + 4x_1^2x_2
+\dot{x}_2 &= -x_1 + 4x_2 - 4x_1^2x_2
 \end{aligned}
 $$
 
 ```{python}
+#| label: comp-imports
 import numpy as np
 from numpy import typing as npt
-from scipy import integrate
+from scipy import integrate, optimize
 from matplotlib import pyplot as plt
 
-def van_der_pol_oscillator_1144(t: npt.DTypeLike, x: npt.ArrayLike) -> npt.ArrayLike:
-    return np.array([
-        x[1],
-        -x[0] + 4*x[1] - 4*x[0]**2*x[1],
-    ])
+import pysindy as pys
+from bsindy_slides import van_der_pol
 
-integration_limits = [0, 12]
-initial_state = [2, 0]
-state_space_solution = integrate.solve_ivp(
-    van_der_pol_oscillator_1144, 
-    t_span=integration_limits,
-    y0=initial_state,
-    dense_output=True
-)
-
-plotting_time_span = np.linspace(0, 12, 1001)
-plotting_solution = state_space_solution.sol(plotting_time_span)
-
-fig, axs = plt.subplots(ncols=2, constrained_layout=True)
-axz = axs.flatten()
-axz[0].plot(plotting_time_span, plotting_solution.T)
-axz[0].set_xlabel('t')
-axz[0].legend(['$x_1$', '$x_2$'])
-axz[1].plot(*plotting_solution)
-axz[1].set_xlabel('$x_1$')
-axz[1].set_ylabel('$x_2$')
-_ = None
+rng = np.random.default_rng(20250911)
 ```
 
-## SINDy: Example
-
-The Van der Pol Oscillator (noisy observations)
-
-$$
-y = x + \mathcal{N}(0, 0.1^2)
-$$
+## Vanilla SINDy: Example
 
 ```{python}
-rng = np.random.default_rng(20250911)
-observation_times = np.linspace(0, 12, 49)
-pure_observations = state_space_solution.sol(observation_times)
-noisy_observations = (
-    pure_observations
-    + rng.normal(loc=0, scale=0.1, size=pure_observations.shape)
-)
+plottable = van_der_pol.generate_solution()
 
-fig, axs = plt.subplots(ncols=2, constrained_layout=True)
+fig, axs = plt.subplots(ncols=2)
 axz = axs.flatten()
-axz[0].plot(plotting_time_span, plotting_solution.T)
-axz[0].set_prop_cycle(None)
-axz[0].plot(observation_times, noisy_observations.T, marker='+', linestyle='none')
+axz[0].plot(plottable.t, plottable.y.T)
 axz[0].set_xlabel('t')
 axz[0].legend(['$x_1$', '$x_2$'])
-axz[1].plot(*plotting_solution)
-axz[1].plot(*noisy_observations, color='k', marker='+', linestyle='none')
+
+axz[1].plot(*plottable.y, color='k')
 axz[1].set_xlabel('$x_1$')
 axz[1].set_ylabel('$x_2$')
+
+fig.set_layout_engine('tight')
 _ = None
 ```
+
+## Vanilla SINDy: Example
+
+We can view the (equations of the) Van der Pol oscillator as a linear combination of some library functions
+
+
+$$
+\begin{bmatrix} \dot{x}_1 \\ \dot{x}_2 \end{bmatrix} = 
+\begin{bmatrix}
+0 & 1 & 0 & 0 & 0 & \dots\\
+-1 & 4 & 0 & -4 & 0 & \dots
+\end{bmatrix}
+\begin{bmatrix}
+x_1 \\ x_2 \\ x_1x_2 \\ x_1^2x_2 \\ x_1x_2^2 \\ \vdots
+\end{bmatrix}
+$$
+
+And we aim to recover this matrix of coefficients.
+
+## Vanilla SINDy: Example
+
+This method is implemented in Python by the `pysindy` library:
+
+```python
+import pysindy
+
+time = ...
+data = ... + noise
+
+# initialise w/ defaults
+model = pysindy.SINDy() 
+
+model.fit(data, t=time)
+
+model.print()
+```
+
+```{python}
+model, data = van_der_pol.main(rng=rng)
+
+model.print()
+```
+
+Truth:
+
+$$\begin{aligned}
+\dot{x}_1 &= x_2\\
+\dot{x}_2 &= -x_1 + 4x_2 - 4x_1^2x_2
+\end{aligned}
+$$
+
+## Vanilla SINDy: Example
+
+```{python}
+
+model_sol = model.simulate(
+    x0=data['observations'][:,0], 
+    t=plottable.t
+)
+
+fig, axs = plt.subplots(ncols=2)
+axz = axs.flatten()
+axz[0].plot(data['truth'].t, data['observations'].T, 'x')
+axz[0].set_prop_cycle(None) 
+axz[0].plot(plottable.t, model_sol)
+
+axz[1].plot(*data['observations'], 'x', color='r')
+axz[1].plot(*model_sol.T, color='k')
+```
+
+## Problems
+
+1. 
 
 ## References
 
