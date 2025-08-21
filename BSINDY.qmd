@@ -24,6 +24,8 @@ format:
 
 ## Summary
 
+Source paper: @fung_rapid_2025
+
 - SINDy is a method used to estimate dynamic models from data
 - This paper presents a Bayesian reformulation of the method
 - The Bayesian method is more robust against noise
