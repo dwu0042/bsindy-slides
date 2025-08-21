@@ -1,0 +1,3 @@
+[submodule "B-SINDy"]
+	path = B-SINDy
+	url = git@github.com:llfung/B-SINDy.git
