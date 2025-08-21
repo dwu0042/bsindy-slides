@@ -16,6 +16,7 @@ def van_der_pol_oscillator_1144(
     ])
 
 DENSE = 1001
+KINDA_DENSE = 301
 SPARSE = 49
 
 def generate_solution(
@@ -62,9 +63,9 @@ def sindy_fit(
     return model
 
 
-def main(rng=None):
+def main(sparsity=SPARSE, rng=None):
 
-    state_sol = generate_solution(span_density=SPARSE)
+    state_sol = generate_solution(span_density=sparsity)
     observations = add_noise(state_sol.y, rng=rng)
 
     model = sindy_fit(state_sol.t, observations.T)

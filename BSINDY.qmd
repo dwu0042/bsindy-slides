@@ -19,7 +19,7 @@ format:
                     tex: {packages: {'[+]': ['physics']}}
                 };
                 </script>
-
+        show-slide-number: all
 ---
 
 ## Summary
@@ -27,7 +27,7 @@ format:
 - SINDy is a method used to estimate dynamic models from data
 - This paper presents a Bayesian reformulation of the method
 - The Bayesian method is more robust against noise
-- There are sickos out there that still use MatLab
+- There are freaks out there that still use MatLab
 
 ## Background
 
@@ -44,23 +44,24 @@ $$\frac{d}{dt} x(t) = f(t, x(t); \Theta)$$
 Can also be viewed as a nonlinear form of time-series regression:
 
 $$
-x_{t + \Delta t} = x_t + \Delta t \, f(t, x_t; \Theta)
+x_{t + \delta t} = x_t + \delta t \, f(t, x_t; \Theta)
 $$
 
 ## Background
 
-Usually, we like to specify the form of $f$, since we have some belief of how the system we are studying behaves.
+Usually, we use **domain knowledge** and **blind belief** to _specify_ $f$. For example, we might be observing a simple physical system, like a bouncing spring, where we have a good idea of the _governing equations_.
 
-This area of study instead focuses on the case where we want to "discover" underlying mechanisms from observations. 
+However, we sometimes have **complex systems** where we do not know exactly how the system behaves (or should behave).
+Instead, we are interested in _discovering_ the governing equations from observations.
 
 ## SINDy
 
-@brunton_discovering_2016 introduces a method for estimating a model $f$ from data $y$ under a non-Bayesian framework.
+@brunton_discovering_2016 introduces a method for estimating a model $f$ from data $y$ under a _non-Bayesian_ control engineering framework.
 
-The idea is that the mechanisms in $f$ can be represented as a linear combination of functions from a pre-specified library.
-Then, a sparsity penalty can be applied to shrink nuisance components of the library to zero.
+The idea is that the mechanisms in $f$ can be represented as a **linear combination of simple library functions**.
+Then, a **sparsity penalty** can be applied to shrink nuisance library functions to zero.
 
-## Vanilla SINDy: Example
+## A Running Example
 
 The Van der Pol Oscillator
 
@@ -83,7 +84,7 @@ from bsindy_slides import van_der_pol
 rng = np.random.default_rng(20250911)
 ```
 
-## Vanilla SINDy: Example
+## A Running Example
 
 ```{python}
 plottable = van_der_pol.generate_solution()
@@ -102,7 +103,7 @@ fig.set_layout_engine('tight')
 _ = None
 ```
 
-## Vanilla SINDy: Example
+## A Running Example
 
 We can view the (equations of the) Van der Pol oscillator as a linear combination of some library functions
 
@@ -120,9 +121,9 @@ $$
 
 And we aim to recover this matrix of coefficients.
 
-## Vanilla SINDy: Example
+## A Running Example: Vanilla SINDy
 
-This method is implemented in Python by the `pysindy` library:
+The method from @brunton_discovering_2016 is implemented in Python by the `pysindy` library:
 
 ```python
 import pysindy
@@ -138,8 +139,10 @@ model.fit(data, t=time)
 model.print()
 ```
 
+. . . 
+
 ```{python}
-model, data = van_der_pol.main(rng=rng)
+model, data = van_der_pol.main(sparsity=van_der_pol.KINDA_DENSE, rng=rng)
 
 model.print()
 ```
@@ -152,7 +155,7 @@ $$\begin{aligned}
 \end{aligned}
 $$
 
-## Vanilla SINDy: Example
+## A Running Example: Vanilla SINDy
 
 ```{python}
 
@@ -171,9 +174,62 @@ axz[1].plot(*data['observations'], 'x', color='r')
 axz[1].plot(*model_sol.T, color='k')
 ```
 
-## Problems
+## Emerging Problems 
 
-1. 
+1. That was quite a lot of data
+
+    If we try again with less data:
+
+## Emerging Problems
+```{python}
+sparse_model, sparse_data = van_der_pol.main(
+    sparsity=van_der_pol.SPARSE,
+    rng=rng,
+)
+
+sparse_model.print()
+```
+
+```{python}
+sparse_model_sol = sparse_model.simulate(
+    x0=sparse_data['observations'][:,0], 
+    t=plottable.t
+)
+
+fig, axs = plt.subplots(ncols=2)
+axz = axs.flatten()
+axz[0].plot(sparse_data['truth'].t, sparse_data['observations'].T, 'x')
+axz[0].set_prop_cycle(None) 
+axz[0].plot(plottable.t, sparse_model_sol)
+
+axz[1].plot(*sparse_data['observations'], 'x', color='r')
+axz[1].plot(*sparse_model_sol.T, color='k')
+```
+
+## Emerging Problems
+
+1. That was quite a lot of data
+
+    If we try again with less data, we get worse results.
+
+. . . 
+
+2. We have no real measure of uncertainty in our estimate
+
+## Existing Extensions and Solutions
+
+- Ensemble SINDy
+
+- SparseBayes
+
+- 
+
+## B-SINDy
+
+Key contribution:
+
+
+
 
 ## References
 
