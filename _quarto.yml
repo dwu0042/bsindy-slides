@@ -1,6 +1,19 @@
 project:
   title: "BSINDY"
 
-format: revealjs
-
+format:
+  presentation-revealjs+letterbox:
+    css: custom.css
+    html-math-method:
+      method: mathjax
+      url: https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js
+    include-in-header:
+      - text: |
+          <script>
+          window.MathJax = {
+              loader: {load: ['[tex]/physics']},
+              tex: {packages: {'[+]': ['physics']}}
+          };
+          </script>
+ 
 

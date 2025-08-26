@@ -5,21 +5,6 @@ date: 11 September 2025
 bibliography: refs.bib
 filter:
     - pyodide
-
-format: 
-    revealjs:
-        html-math-method:
-            method: mathjax
-            url: https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js
-        include-in-header:
-            - text: |
-                <script>
-                window.MathJax = {
-                    loader: {load: ['[tex]/physics']},
-                    tex: {packages: {'[+]': ['physics']}}
-                };
-                </script>
-        show-slide-number: all
 ---
 
 ## Summary
@@ -29,7 +14,7 @@ Source paper: @fung_rapid_2025
 - SINDy is a method used to estimate dynamic models from data
 - This paper presents a Bayesian reformulation of the method
 - The Bayesian method is more robust against noise
-- There are freaks out there that still use MatLab
+- [There are freaks out there that still use MatLab]{.faded-grey}
 
 ## Background
 
@@ -80,7 +65,7 @@ from numpy import typing as npt
 from scipy import integrate, optimize
 from matplotlib import pyplot as plt
 
-import pysindy as pys
+import pysindy
 from bsindy_slides import van_der_pol
 
 rng = np.random.default_rng(20250911)
@@ -127,24 +112,30 @@ And we aim to recover this matrix of coefficients.
 
 The method from @brunton_discovering_2016 is implemented in Python by the `pysindy` library:
 
-```python
-import pysindy
+```{python}
+state_sol = van_der_pol.generate_solution(span_density=van_der_pol.KINDA_DENSE)
+observations = van_der_pol.add_noise(state_sol.y, rng=rng)
 
-time = ...
-data = ... + noise
+model_options = dict(
+    feature_names=['x1', 'x2'],
+    optimizer=pysindy.STLSQ(threshold=0.45),
+    feature_library=pysindy.PolynomialLibrary(degree=3),
+)
 
-# initialise w/ defaults
-model = pysindy.SINDy() 
-
-model.fit(data, t=time)
-
-model.print()
+time = state_sol.t
+data = observations.T
 ```
 
-. . . 
-
 ```{python}
-model, data = van_der_pol.main(sparsity=van_der_pol.KINDA_DENSE, rng=rng)
+#| echo: true
+
+# time = ...
+# data = ... + noise
+
+# initialise w/ (hidden) custom options
+model = pysindy.SINDy(**model_options) 
+
+model.fit(data, t=time)
 
 model.print()
 ```
@@ -162,17 +153,17 @@ $$
 ```{python}
 
 model_sol = model.simulate(
-    x0=data['observations'][:,0], 
+    x0=observations[:,0], 
     t=plottable.t
 )
 
 fig, axs = plt.subplots(ncols=2)
 axz = axs.flatten()
-axz[0].plot(data['truth'].t, data['observations'].T, 'x')
+axz[0].plot(state_sol.t, observations.T, 'x')
 axz[0].set_prop_cycle(None) 
 axz[0].plot(plottable.t, model_sol)
 
-axz[1].plot(*data['observations'], 'x', color='r')
+axz[1].plot(*observations, 'x', color='r')
 axz[1].plot(*model_sol.T, color='k')
 ```
 
@@ -214,9 +205,9 @@ axz[1].plot(*sparse_model_sol.T, color='k')
 
     If we try again with less data, we get worse results.
 
-. . . 
-
 2. We have no real measure of uncertainty in our estimate
+
+    It will be difficult to propagate the uncertainty from the observation model back into parameter uncertainty
 
 ## Existing Extensions and Solutions
 
