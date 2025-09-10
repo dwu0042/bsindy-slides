@@ -1,6 +1,6 @@
- name: Build and deploy slides
+name: Build and deploy slides
 
- on:
+on:
   push:
     branches: ["main"]
   
