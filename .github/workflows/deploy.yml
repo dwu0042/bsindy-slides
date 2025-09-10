@@ -31,10 +31,10 @@ jobs:
         run: uv sync
       - name: quarto install
         uses: quarto-dev/quarto-actions/setup@v2
-      - name: activate
-        run: source .venv/bin/activate
       - name: render
-        uses: quarto-dev/quarto-actions/render@v2
+        run: |
+          source .venv/bin/activate
+          quarto render
       - name: upload artifact
         uses: actions/upload-artifact@v4
         with:
