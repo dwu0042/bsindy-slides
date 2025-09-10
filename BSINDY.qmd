@@ -207,9 +207,14 @@ axz = axs.flatten()
 axz[0].plot(state_sol.t, observations.T, 'x')
 axz[0].set_prop_cycle(None) 
 axz[0].plot(plottable.t, model_sol)
+axz[0].set_xlabel('t')
 
 axz[1].plot(*observations, 'x', color='r')
 axz[1].plot(*model_sol.T, color='k')
+axz[1].set_xlabel('$x_1$')
+axz[1].set_ylabel('$x_2$')
+
+_ = None
 ```
 
 ## Emerging Problems 
@@ -286,11 +291,9 @@ Assume we can approximate everything as Gaussian
 
 Noise propogation
 
-$$y = x + \epsilon$$
+<!-- $$y = x + \epsilon$$
 
-$$ L_{\partial t} y = w \mathbf{D}(x) + e$$
-
-. . .
+$$ L_{\partial t} y = w \mathbf{D}(x) + e$$ -->
 
 Sketch:
 
@@ -332,6 +335,8 @@ until evidence is not increasing
 ## B-SINDy
 
 ![Figure 4](paper/figs/rspa.2024.0200.f004.jpg)
+
+## B-SINDy
 
 ![Figure 5](paper/figs/rspa.2024.0200.f005.jpg)
 
