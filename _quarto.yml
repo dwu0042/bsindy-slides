@@ -4,6 +4,7 @@ project:
 
 format:
   presentation-revealjs+letterbox:
+    fontsize: 32px
     css: custom.css
     html-math-method:
       method: mathjax
