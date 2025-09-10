@@ -1,5 +1,6 @@
 project:
   title: "BSINDY"
+  output-dir: _site 
 
 format:
   presentation-revealjs+letterbox:
