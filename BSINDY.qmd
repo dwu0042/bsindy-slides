@@ -113,13 +113,16 @@ The Van der Pol Oscillator
 
 $$\begin{aligned}
 \dot{x}_1 &= x_2\\
-\dot{x}_2 &= -x_1 + 4x_2 - 4x_1^2x_2
+\dot{x}_2 &= -x_1 + \mu x_2 - \mu x_1^2x_2
 \end{aligned}
 $$
 
 
+![from Wikipedia](ext/Van_der_pol_triode.png){width=60%}
+
 ## A Running Example
 
+For $\mu=4$
 ```{python}
 plottable = van_der_pol.generate_solution()
 
